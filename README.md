@@ -8,7 +8,7 @@
 
 1. 在
 [Releases](https://github.com/Duster-Cule/UnipusHelper/releases)
-下载`unipusHelper.jar`和`unipushelperconfig.properties`。 
+下载`unipusHelper.jar`和`unipushelperconfig.properties`并放入同一个文件夹。 
 2. 配置`unipushelperconfig.properties`。具体配置请参考[properties](src/doc/properties.md)。
 3. 启动时可以选择直接在命令行中输入
     ```bash
