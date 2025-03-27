@@ -7,6 +7,7 @@ target/
 src/test/
 
 ### IntelliJ IDEA ###
+.idea/artifacts/
 .idea/modules.xml
 .idea/jarRepositories.xml
 .idea/compiler.xml
