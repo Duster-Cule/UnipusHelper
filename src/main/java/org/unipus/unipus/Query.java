@@ -74,7 +74,7 @@ public class Query {
         return 0;
     }
 
-    public int queryQuestion(String APIKey, int unitsComplete, List<String> exceptURLs) throws InterruptedException, AnswerLogicException, WrongRedirectionException {
+    public int queryQuestion(String LLMPlatform, String address, int port, String model, String APIKey, int unitsComplete, List<String> exceptURLs) throws InterruptedException, AnswerLogicException, WrongRedirectionException {
 
         if(!client.getCurrentUrl().contains("uai.unipus.cn/app/cmgt/resource-detail")){
             throw new WrongRedirectionException("网址可能有误，请检查跳转 \n 当前地址:" + client.getCurrentUrl() + "\n 需要地址:uai.unipus.cn/app/cmgt/resource-detail/*");
@@ -112,7 +112,7 @@ public class Query {
                 Actions actions = new Actions(client);
                 actions.moveToElement(coursepanel).click().build().perform();
 
-                if (!new Learn(client).learn(APIKey, exceptURLs)) {
+                if (!new Learn(client).learn(LLMPlatform, address, port, model, APIKey, exceptURLs)) {
                     this.exceptnum++;
                 }
                 client.get(contentURL);
@@ -126,7 +126,7 @@ public class Query {
     }
 
     public static QuestionType queryQuestionType(WebDriver client) {
-        WebElement question_warp = client.findElement(By.xpath("//div[@class=\"question-wrap\"]"));
+        WebElement question_warp = WaitForHTML.waitForFindElementAppear(client, 10000, By.xpath("//div[@class=\"question-wrap\"]"));
         WebElement question = client.findElement(By.xpath("//div[@class=\"question-wrap\"]//div[contains(@class, \"layoutBody-container\")]"));
         List<String> classes = Arrays.asList(question.getDomAttribute("class").split(" "));
         if(classes.contains("has-material")) {
@@ -160,7 +160,7 @@ public class Query {
     }
 
     public String QueryName(){
-        WebElement name = client.findElement(By.className("header_avatar__tbjHo"));
+        WebElement name = WaitForHTML.waitForFindElementAppear(client, 10000, By.className("header_avatar__tbjHo"));
         return name.getDomProperty("innerText");
     }
 }

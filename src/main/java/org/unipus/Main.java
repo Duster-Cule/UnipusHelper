@@ -66,8 +66,34 @@ public class Main {
             properties.setProperty("username", scanner.nextLine());
             System.out.println("请输入密码：");
             properties.setProperty("password", scanner.nextLine());
-            System.out.println("请输入AI平台的APIKey：");
-            properties.setProperty("APIKey", scanner.nextLine());
+            String llm;
+            while (true) {
+                System.out.println("请输入LLM平台名称（deepseek或ollama）");
+                llm = scanner.nextLine().toLowerCase();
+                if ("deepseek".equals(llm) || "ollama".equals(llm)) {
+                    break;
+                } else {
+                    System.out.println("输入错误，请重新输入");
+                }
+            }
+            properties.setProperty("LLMPlatform", llm);
+            switch (llm) {
+                case "deepseek":
+                    System.out.println("请输入" + llm + "平台的APIKey：");
+                    properties.setProperty("APIKey", scanner.nextLine());
+                    break;
+                case "ollama":
+                    if(!confirmOllamaWarning(scanner)) {
+                        System.out.println("取消使用ollama，程序退出");
+                        return;
+                    }
+                    System.out.println("请输入ollama API的地址（不带端口，默认localhost）");
+                    properties.setProperty("APIAddress", scanner.nextLine());
+                    System.out.println("请输入ollama API的端口（默认11434）");
+                    properties.setProperty("APIPort", scanner.nextLine());
+                    System.out.println("请输入模型名称（与命令ollama run后的参数一致）");
+                    properties.setProperty("model", scanner.nextLine());
+            }
             List<String> exceptURLs = new ArrayList<>();
             String exceptURL = "";
             do {
@@ -94,13 +120,25 @@ public class Main {
 
     public void mainStart(Properties properties, boolean debugmode) {
 
-        String name = properties.getProperty("username");
-        String password = properties.getProperty("password");
-        String APIKey = properties.getProperty("APIKey");
-        List<String> exceptURLs = Arrays.stream(properties.getProperty("exceptURLs").split("\\|")).toList();
+        String name = properties.getProperty("username", "").trim();
+        String password = properties.getProperty("password", "").trim();
+        String APIKey = properties.getProperty("APIKey", "").trim();
+        String LLMPlatform = properties.getProperty("LLMPlatform", "").trim().toLowerCase();
+        if ("ollama".equals(LLMPlatform)) {
+            if (!confirmOllamaWarning(new Scanner(System.in))) {
+                System.out.println("取消使用ollama，程序退出");
+                return;
+            }
+        }
+        String addressValue = properties.getProperty("APIAddress", "localhost").trim();
+        String APIAddress = addressValue.isEmpty() ? "localhost" : addressValue;
+        String portValue = properties.getProperty("APIPort", "11434").trim();
+        int APIPort = portValue.isEmpty() ? 11434 : Integer.parseInt(portValue);
+        String model = properties.getProperty("model", "").trim();
+        List<String> exceptURLs = Arrays.stream(properties.getProperty("exceptURLs", "").trim().split("\\|")).toList();
         ChromeOptions options = getDefaultChromeOptions();
-        options.addArguments("--window-size=" + properties.getProperty("browser.width") + "," + properties.getProperty("browser.width"));
-        if (properties.getProperty("showbrowser").equals("false")) {
+        options.addArguments("--window-size=" + properties.getProperty("browser.width", "1920").trim() + "," + properties.getProperty("browser.width", "1080").trim());
+        if (!properties.getProperty("showbrowser", "false").trim().equals("true")) {
             options.addArguments("--headless");
         }
         WebDriver client = new ChromeDriver(options);
@@ -108,7 +146,7 @@ public class Main {
             client.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(10));
             Query query = new Query(client);
             if (new Login(client).login(name, password)) {
-                System.out.println("登陆成功");
+                System.out.println("登录成功");
                 WaitForHTML.waitForBackgroundJavaScript(client, 10000);
                 System.out.println("你好，" + query.QueryName());
             } else throw new LoginException("登录失败，请检查账户密码");
@@ -119,7 +157,7 @@ public class Main {
                     case 0: {
                         int unit = 0;
                         do {
-                            unit = query.queryQuestion(APIKey, unit, exceptURLs);
+                            unit = query.queryQuestion(LLMPlatform, APIAddress, APIPort, model, APIKey, unit, exceptURLs);
                         } while (unit != -1);
 
                         System.out.println("已完成所有必修点，请自行登录核对。");
@@ -138,7 +176,8 @@ public class Main {
             } else {
                 for (String learnURL : Arrays.stream(learnURLs.split("\\|")).toList()) {
                     client.get(learnURL);
-                    new Learn(client).learn(APIKey, new ArrayList<>());
+                    new Learn(client).learn(LLMPlatform, APIAddress, APIPort, model, APIKey, new ArrayList<>());
+                    client.get("https://uai.unipus.cn/home");
                 }
             }
 
@@ -153,6 +192,23 @@ public class Main {
 
     }
 
+    public static boolean confirmOllamaWarning(Scanner s) {
+        System.out.println("检测到您选择了ollama作为LLM平台。警告：如果您是在家用电脑上运行了ollama，您可能需要更换平台。");
+        System.out.println("在运行软件之前，请您认真阅读对于ollama平台的警告：https://github.com/Duster-Cule/UnipusHelper/blob/main/src/doc/ollamaWarning.md");
+        while (true) {
+            System.out.println("您是否仍然使用ollama运行软件？(y/n)");
+            String confirm = s.nextLine();
+            switch (confirm.toLowerCase()) {
+                case "y":
+                    return true;
+                case "n":
+                    return false;
+                default:
+                    break;
+            }
+        }
+    }
+
     private static ChromeOptions getDefaultChromeOptions() {
         return new ChromeOptions();
     }
@@ -165,6 +221,5 @@ public class Main {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
 }

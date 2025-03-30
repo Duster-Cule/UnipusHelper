@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
   <artifact type="jar" name="unipusHelper:jar">
-    <output-path>$PROJECT_DIR$/../../../../Program lite</output-path>
+    <output-path>$PROJECT_DIR$/../../../../Program lite/unipusHelper</output-path>
     <root id="archive" name="unipusHelper.jar">
       <element id="module-output" name="unipusHelper" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/seleniumhq/selenium/selenium-devtools-v133/4.29.0/selenium-devtools-v133-4.29.0.jar" path-in-jar="/" />

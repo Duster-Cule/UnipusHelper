@@ -15,7 +15,7 @@ public class DeepseekRequest {
     private static final String POSTURL = "https://api.deepseek.com/chat/completions";
 
     /**
-     * 以下注释仅说明取值范围，如需要查询变量作用请访问 https://api-docs.deepseek.com/zh-cn/api/create-chat-completion
+     * 以下注释仅说明取值范围，如需要查询变量作用请访问 <a href="https://api-docs.deepseek.com/zh-cn/api/create-chat-completion">deepseek platform</a>
      */
 
     //Possible values: [deepseek-chat, deepseek-reasoner]
@@ -70,7 +70,7 @@ public class DeepseekRequest {
 
         RequestBody body = generateRequestBody(systemPrompt, userPrompt, model, frequency_penalty, max_tokens, presence_penalty, response_format_type, temperature, top_p);
         Request request = new Request.Builder()
-                .url("https://api.deepseek.com/chat/completions")
+                .url(POSTURL)
                 .method("POST", body)
                 .addHeader("Content-Type", "application/json")
                 .addHeader("Accept", "application/json")

@@ -35,8 +35,7 @@ public class Login {
 
         WebElement login = client.findElement(By.className("usso-login-btn"));
         login.click();
-
-        return Objects.equals(client.getCurrentUrl(), "https://uai.unipus.cn/home");
+        return WaitForHTML.waitForWebsiteJumpToURL(client, 10000, "https://uai.unipus.cn/home");
     }
 
 }

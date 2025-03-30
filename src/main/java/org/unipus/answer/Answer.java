@@ -3,14 +3,24 @@ package org.unipus.answer;
 import org.unipus.unipus.QuestionType;
 
 abstract public class Answer {
-    protected String system, prompt = "";
+    protected String system = "";
 
-    protected static final String type = "default";
+    public static final String type = "default";
 
     protected String APIKey;
+    protected String address;
+    protected int port;
 
-    public Answer(String APIKey) {
+
+    public Answer(String APIKey, String system) {
         this.APIKey = APIKey;
+        this.system = system;
+    }
+
+    public Answer(String address, int port, String system) {
+        this.address = address;
+        this.port = port;
+        this.system = system;
     }
 
     abstract public String send(String chat);
@@ -19,19 +29,4 @@ abstract public class Answer {
 
     abstract public String getAnswer(String question, QuestionType type);
 
-    public String getPrompt() {
-        return prompt;
-    }
-
-    public void setPrompt(String prompt) {
-        this.prompt = prompt;
-    }
-
-    public String getSystem() {
-        return system;
-    }
-
-    public void setSystem(String system) {
-        this.system = system;
-    }
 }

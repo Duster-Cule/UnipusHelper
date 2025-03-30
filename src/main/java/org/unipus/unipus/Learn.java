@@ -5,7 +5,7 @@ import com.google.gson.reflect.TypeToken;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.unipus.answer.deepseek.DeepseekAnswer;
-import org.unipus.answer.deepseek.DeepseekRequest;
+import org.unipus.answer.ollama.OllamaAnswer;
 import org.unipus.exceptions.AnswerLogicException;
 import org.unipus.utils.StringProcesser;
 import org.unipus.utils.WaitForHTML;
@@ -21,47 +21,45 @@ public class Learn {
         this.client = driver;
     }
 
-    public Boolean learn(String APIKey, List<String> exceptsURL) throws InterruptedException {
-        return startLearn(APIKey, exceptsURL);
+    public Boolean learn(String LLMPlatform, String address, int port, String model, String APIKey, List<String> exceptsURL) throws InterruptedException {
+        return startLearn(LLMPlatform, address, port, model, APIKey, exceptsURL);
     }
 
-    private Boolean startLearn(String APIKey, List<String> exceptsURL) throws InterruptedException, AnswerLogicException{
+    private Boolean startLearn(String LLMPlatform, String address, int port, String model, String APIKey, List<String> exceptURLs) throws InterruptedException, AnswerLogicException {
         if (!client.getCurrentUrl().contains("ucontent.unipus.cn/_explorationpc_default/pc.html")) {
             throw new WrongThreadException("网址可能有误，请检查跳转。\n 当前地址:" + client.getCurrentUrl() + "需要地址:\n ucontent.unipus.cn/_explorationpc_default/pc.html");
         }
-        if (exceptsURL.contains(client.getCurrentUrl())) {
+        if (exceptURLs.contains(client.getCurrentUrl())) {
             return false;
         }
         WaitForHTML.waitForFindElementAppear(client, 10000, By.className("ant-message-success"));
 
         List<WebElement> iKnow = client.findElements(By.className("iKnow"));
-        if(!iKnow.isEmpty()) {
+        if (!iKnow.isEmpty()) {
             iKnow.getFirst().click();
         }
 
         //可能需要优化：index-0b6ce6ac.js中可以获取弹框队列
         List<WebElement> confirmbtn = client.findElements(By.className("ant-btn-primary"));
-        while(!confirmbtn.isEmpty()) {
+        while (!confirmbtn.isEmpty()) {
             confirmbtn.getFirst().click();
             //可能需要优化
-            Thread.sleep((int)(900+Math.random()*100));
+            Thread.sleep((int) (900 + Math.random() * 100));
             confirmbtn = client.findElements(By.className("ant-btn-primary"));
         }
 
-        DeepseekRequest deepseekRequest = new DeepseekRequest();
-
         QuestionType questionType = Query.queryQuestionType(client);
 
-        System.out.println("当前页面："+client.findElement(By.className("pc-break-crumb")).getText().replace("\n"," ") + "\n题目类型:" + questionType);
+        System.out.println("当前页面：" + client.findElement(By.className("pc-break-crumb")).getText().replace("\n", " ") + "\n题目类型:" + questionType);
 
-        switch(questionType){
+        switch (questionType) {
 
             case READING: {
                 Actions actions = new Actions(client);
-                for(int i=0; i<5; i++) {
-                    Thread.sleep(55000+(int)(Math.random()*10000));
+                for (int i = 0; i < 5; i++) {
+                    Thread.sleep(55000 + (int) (Math.random() * 10000));
                     actions.click();
-                    System.out.println("已挂机"+(i+1)+"分钟");
+                    System.out.println("已挂机" + (i + 1) + "分钟");
                 }
                 break;
             }
@@ -93,19 +91,18 @@ public class Learn {
                     quesNum.add(i + ")");
                 }
 
-                //接入Deepseek
+                //接入LLM
 
                 System.out.println("正在查询答案");
                 String question = client.findElement(By.id("main-content")).getText();
 
-                DeepseekAnswer deepseekAnswer = new DeepseekAnswer(APIKey);
-                String answer = deepseekAnswer.getAnswer(question, QuestionType.FILLINGBLANKS);
+                String answer = askquestion(LLMPlatform, address, port, model, APIKey, question, QuestionType.FILLINGBLANKS);
 
                 HashMap<Integer, String> answers = new Gson().fromJson(answer, new TypeToken<HashMap<Integer, String>>() {
                 }.getType());
                 System.out.println("查询完毕");
 
-                //end Deepseek
+                //end LLM
 
                 List<WebElement> inputs = client.findElements(By.xpath("//div[contains(@class, \"input-user-answer\")]/input"));
                 ArrayList<String> hints = new ArrayList<>();
@@ -115,7 +112,7 @@ public class Learn {
                 if (hints.size() == answers.size() && inputs.size() == hints.size()) {
                     for (int i = 0; i < hints.size(); i++) {
                         String answer0 = answers.get(i + 1);
-                        if(hints.get(i).length() <= 5) {
+                        if (hints.get(i).length() <= 5) {
                             answer0 = answer0.replace(hints.get(i), "");
                         }
                         inputs.get(i).sendKeys(StringProcesser.processIlligalCharacter(answer0));
@@ -126,7 +123,7 @@ public class Learn {
                 Thread.sleep(500);
                 client.findElement(By.xpath("//a[@class='btn' and text()='提 交']")).click();
                 Thread.sleep(1000);
-                if(!client.findElements(By.className("ant-modal-confirm-btns")).isEmpty()) {
+                if (!client.findElements(By.className("ant-modal-confirm-btns")).isEmpty()) {
                     client.findElement(By.xpath(".//span[normalize-space(.)='确 定']")).click();
                 }
                 WaitForHTML.waitForFindElementAppear(client, 10000, By.className("ant-message-success"));
@@ -138,28 +135,27 @@ public class Learn {
                 String derictions = client.findElement(By.className("abs-direction")).getText();
                 String questions = client.findElement(By.className("layout-reply-container")).getText();
                 String material = "";
-                if(!client.findElements(By.className("has-material")).isEmpty()){
+                if (!client.findElements(By.className("has-material")).isEmpty()) {
                     material = client.findElement(By.className("text-material-wrapper")).getText();
                 }
                 List<WebElement> choices = client.findElements(By.className("option-wrap"));
 
-                //接入Deepseek
+                //接入LLM
 
                 System.out.println("正在查询答案");
 
-                DeepseekAnswer deepseekAnswer = new DeepseekAnswer(APIKey);
-                String answer = deepseekAnswer.getAnswer(derictions+"\n"+material+"\n"+questions, QuestionType.CHOOSING);
+                String answer = askquestion(LLMPlatform, address, port, model, APIKey, derictions + "\n" + material + "\n" + questions, QuestionType.CHOOSING);
 
                 HashMap<Integer, String> answers = new Gson().fromJson(answer, new TypeToken<HashMap<Integer, String>>() {
                 }.getType());
                 System.out.println("查询完毕");
 
-                //end Deepseek
+                //end LLM
 
-                if(answers.size() == choices.size()) {
-                    Function<Character, Character> cast = c -> (char)(c - 'A' + '1');
-                    for (int i=0; i<answers.size(); i++) {
-                        choices.get(i).findElement(By.xpath("./div["+ cast.apply(answers.get(i+1).charAt(0)) +"]")).click();
+                if (answers.size() == choices.size()) {
+                    Function<Character, Character> cast = c -> (char) (c - 'A' + '1');
+                    for (int i = 0; i < answers.size(); i++) {
+                        choices.get(i).findElement(By.xpath("./div[" + cast.apply(answers.get(i + 1).charAt(0)) + "]")).click();
                     }
                 } else
                     throw new AnswerLogicException("题目与答案不符|题目类型：CHOOSING|题目数量：" + choices.size() + "|答案数量：" + answers.size());
@@ -167,7 +163,7 @@ public class Learn {
                 Thread.sleep(500);
                 client.findElement(By.xpath("//a[@class='btn' and text()='提 交']")).click();
                 Thread.sleep(1000);
-                if(!client.findElements(By.className("ant-modal-confirm-btns")).isEmpty()) {
+                if (!client.findElements(By.className("ant-modal-confirm-btns")).isEmpty()) {
                     client.findElement(By.xpath(".//span[normalize-space(.)='确 定']")).click();
                 }
                 WaitForHTML.waitForFindElementAppear(client, 10000, By.className("ant-message-success"));
@@ -184,21 +180,21 @@ public class Learn {
                 }
                 List<WebElement> inputs = client.findElements(By.className("question-inputbox-input"));
                 inputs.addAll(client.findElements(By.className("question-textarea-content")));
-                //接入Deepseek
+
+                //接入LLM
 
                 System.out.println("正在查询答案");
 
-                DeepseekAnswer deepseekAnswer = new DeepseekAnswer(APIKey);
-                String answer = deepseekAnswer.getAnswer(derictions+"\n"+material+"\n"+"Questions are below, the number of questions："+ inputs.size() + "\n" +questions, QuestionType.SHORTANSWER);
+                String answer = askquestion(LLMPlatform, address, port, model, APIKey, derictions + "\n" + material + "\n" + "Questions are below, the number of questions：" + inputs.size() + "\n" + questions, QuestionType.SHORTANSWER);
 
                 HashMap<Integer, String> answers = new Gson().fromJson(answer, new TypeToken<HashMap<Integer, String>>() {
                 }.getType());
                 System.out.println("查询完毕");
 
-                //end Deepseek
-                if(answers.size() == inputs.size()) {
-                    for(int i=0; i<answers.size(); i++) {
-                        inputs.get(i).sendKeys(StringProcesser.processIlligalCharacter(answers.get(i+1)));
+                //end LLM
+                if (answers.size() == inputs.size()) {
+                    for (int i = 0; i < answers.size(); i++) {
+                        inputs.get(i).sendKeys(StringProcesser.processIlligalCharacter(answers.get(i + 1)));
                     }
                 } else
                     throw new AnswerLogicException("题目与答案不符|题目类型：SHORTANSWER|题目数量：" + inputs.size() + "|答案数量：" + answers.size());
@@ -206,7 +202,7 @@ public class Learn {
                 Thread.sleep(500);
                 client.findElement(By.xpath("//a[@class='btn' and text()='提 交']")).click();
                 Thread.sleep(1000);
-                if(!client.findElements(By.className("ant-modal-confirm-btns")).isEmpty()) {
+                if (!client.findElements(By.className("ant-modal-confirm-btns")).isEmpty()) {
                     client.findElement(By.xpath(".//span[normalize-space(.)='确 定']")).click();
                 }
                 WaitForHTML.waitForFindElementAppear(client, 10000, By.className("ant-message-success"));
@@ -217,17 +213,15 @@ public class Learn {
             case BLANKEDCLOZE: {
                 String derictions = client.findElement(By.className("abs-direction")).getText();
                 ArrayList<String> options = new ArrayList<>();
-                for(WebElement option : client.findElements(By.className("option-wrapper"))) {
+                for (WebElement option : client.findElements(By.className("option-wrapper"))) {
                     options.add(option.getText());
                 }
                 String questions = client.findElement(By.className("question-material-banked-cloze-scoop")).getText();
                 List<WebElement> inputs = client.findElements(By.xpath("//div[contains(@class, \"reply-wrapper\")]//input"));
 
-                //接入Deepseek
+                //接入LLM
 
                 System.out.println("正在查询答案");
-
-                DeepseekAnswer deepseekAnswer = new DeepseekAnswer(APIKey);
 
                 StringBuilder material = new StringBuilder();
                 for (String option : options) {
@@ -235,17 +229,17 @@ public class Learn {
                     material.append(" ");
                 }
 
-                String answer = deepseekAnswer.getAnswer(derictions+"\n"+material+"\n"+questions, QuestionType.SHORTANSWER);
+                String answer = askquestion(LLMPlatform, address, port, model, APIKey, derictions + "\n" + material + "\n" + questions, QuestionType.BLANKEDCLOZE);
 
                 HashMap<Integer, String> answers = new Gson().fromJson(answer, new TypeToken<HashMap<Integer, String>>() {
                 }.getType());
                 System.out.println("查询完毕");
 
-                //end Deepseek
+                //end LLM
 
-                if(inputs.size() == answers.size()) {
-                    for (int i=0; i<inputs.size(); i++) {
-                        inputs.get(i).sendKeys(StringProcesser.processIlligalCharacter(answers.get(i+1)));
+                if (inputs.size() == answers.size()) {
+                    for (int i = 0; i < inputs.size(); i++) {
+                        inputs.get(i).sendKeys(StringProcesser.processIlligalCharacter(answers.get(i + 1)));
                     }
                 } else
                     throw new AnswerLogicException("题目与答案不符|题目类型：SHORTANSWER|题目数量：" + inputs.size() + "|答案数量：" + answers.size());
@@ -253,7 +247,7 @@ public class Learn {
                 Thread.sleep(500);
                 client.findElement(By.xpath("//a[@class='btn' and text()='提 交']")).click();
                 Thread.sleep(1000);
-                if(!client.findElements(By.className("ant-modal-confirm-btns")).isEmpty()) {
+                if (!client.findElements(By.className("ant-modal-confirm-btns")).isEmpty()) {
                     client.findElement(By.xpath(".//span[normalize-space(.)='确 定']")).click();
                 }
                 WaitForHTML.waitForFindElementAppear(client, 10000, By.className("ant-message-success"));
@@ -286,15 +280,29 @@ public class Learn {
             case MATCH:
             case UNITPROJECT:
                 System.out.println("不支持作答的题型，已跳过");
-                System.out.println("当前地址："+client.getCurrentUrl());
+                System.out.println("当前地址：" + client.getCurrentUrl());
                 return false;
             case UNKNOWN:
                 System.err.println("题目类型未知，请更新题目类型");
-                System.out.println("当前地址："+client.getCurrentUrl());
+                System.out.println("当前地址：" + client.getCurrentUrl());
                 return false;
             default:
                 throw new AssertionError("Unreachable code reached");
         }
         return true;
     }
+
+    private static String askquestion(String LLMPlatform, String address, int port, String model, String APIKey, String question, QuestionType questionType) {
+        switch (LLMPlatform) {
+            case "deepseek":
+                return new DeepseekAnswer(APIKey).getAnswer(question, questionType);
+            case "ollama":
+                boolean enableJSON = !model.contains("deepseek-r1");
+                return new OllamaAnswer(address, port, model, enableJSON).getAnswer(question, questionType);
+            default:
+                System.err.println("模型名称错误");
+                return "";
+        }
+    }
+
 }
