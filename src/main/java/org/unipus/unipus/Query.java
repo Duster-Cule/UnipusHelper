@@ -131,6 +131,7 @@ public class Query {
         List<String> classes = Arrays.asList(question.getDomAttribute("class").split(" "));
         if(classes.contains("has-material")) {
             if(classes.contains("has-reply")) {
+                if(!question_warp.findElements(By.xpath("//div[@class=\"question-audio\"]")).isEmpty()) return QuestionType.LISTENING;
                 if(!question_warp.findElements(By.xpath("//div[@class=\"discussion-cloud-reply\"]")).isEmpty()) return QuestionType.COMMENT;
                 if(!question_warp.findElements(By.xpath("//div[@class=\"question-common-abs-choice\"]")).isEmpty()) return QuestionType.CHOOSING;
                 if(!question_warp.findElements(By.xpath("//div[@class=\"reply-wrap\"]//div[@class=\"question-inputbox\"]")).isEmpty()) return QuestionType.SHORTANSWER;
@@ -138,7 +139,6 @@ public class Query {
                 if(!question_warp.findElements(By.xpath("//div[contains(@class, \"question-abs-material-banked-cloze\")]")).isEmpty()) return QuestionType.BLANKEDCLOZE;
                 if(!question_warp.findElements(By.xpath("//div[@class=\"sortable-list-wrapper\"]")).isEmpty()) return QuestionType.MATCH;
                 if(!question_warp.findElements(By.xpath("//div[@class=\"question-multi-file-upload\"]")).isEmpty()) return QuestionType.UNITPROJECT;
-                if(!question_warp.findElements(By.xpath("//div[@class=\"question-audio\"]")).isEmpty()) return QuestionType.LISTENING;
 
             } else {
                 if(!question_warp.findElements(By.xpath("//div[@class=\"question-rich-text-read\"]")).isEmpty()) return QuestionType.READING;
