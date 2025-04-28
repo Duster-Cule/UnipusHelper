@@ -21,8 +21,7 @@ public class Query {
     public int queryCourse(){
         client.get("https://uai.unipus.cn/home");
         WaitForHTML.waitForBackgroundJavaScript(client, 10000);
-        List<WebElement> known = client.findElements(By.className("ucm-ant-btn-primary"));
-        if (!known.isEmpty()) known.getFirst().click();
+        WaitForHTML.waitForFindElementAppear(client, 2000, By.className("ucm-ant-btn-primary")).click();
         List<WebElement> btns = client.findElements(By.className("menu-side_title__lms49"));
         for(WebElement btn : btns) {
             if(Objects.equals(btn.getDomProperty("innerText"), "我的课程")) {
@@ -76,7 +75,7 @@ public class Query {
 
     public int queryQuestion(String LLMPlatform, String address, int port, String model, String APIKey, int unitsComplete, List<String> exceptURLs) throws InterruptedException, AnswerLogicException, WrongRedirectionException {
 
-        if(!client.getCurrentUrl().contains("uai.unipus.cn/app/cmgt/resource-detail")){
+        if(!WaitForHTML.waitForWebsiteJumpContainsURL(client, 10000, "uai.unipus.cn/app/cmgt/resource-detail")){
             throw new WrongRedirectionException("网址可能有误，请检查跳转 \n 当前地址:" + client.getCurrentUrl() + "\n 需要地址:uai.unipus.cn/app/cmgt/resource-detail/*");
         }
         WebElement unit = WaitForHTML.waitForFindElementAppear(client, 10000, By.className("unipus-tabs_unitTabScrollContainer__fXBxR"));
