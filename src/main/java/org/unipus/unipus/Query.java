@@ -30,8 +30,11 @@ public class Query {
             }
         }
 
-        WebElement course = WaitForHTML.waitForFindElementAppear(client, 10000, By.className("slick-list"));
-        List<WebElement> courses = course.findElements(By.xpath("./*"));
+        List<WebElement> courseList = WaitForHTML.waitForFindElementsAppear(client, 10000, By.className("slick-list"));
+        List<WebElement> courses = new ArrayList<>();
+        for (WebElement course : courseList) {
+            courses.addAll(course.findElements(By.xpath("./*")));
+        }
         int courseNum = courses.size();
         switch (courseNum) {
             case 0:
@@ -52,7 +55,9 @@ public class Query {
                 break;
             default:
                 System.out.println("共有" + courseNum + "门课程在学习");
-                for (WebElement cours : courses) {
+                for (int i=0; i<courses.size(); i++) {
+                    WebElement cours = courses.get(i);
+                    System.out.println((i+1)+":");
                     String[] courseInfo1 = cours.getDomProperty("innerText").split("\n");
                     System.out.println(courseInfo1[0]);
                     System.out.println(courseInfo1[2] + courseInfo1[3]);
