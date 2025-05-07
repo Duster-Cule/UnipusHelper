@@ -1,5 +1,6 @@
 package org.unipus;
 
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -185,7 +186,7 @@ public class Main {
             e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
-            if(debugmode) printCurrentHtml(client);
+            if(debugmode) printCurrentHtmlDOM(client);
         } finally {
             if(!debugmode) client.quit();
         }
@@ -213,11 +214,18 @@ public class Main {
         return new ChromeOptions();
     }
 
-    public void printCurrentHtml(WebDriver client) {
+    public static void printCurrentHtmlDOM(WebDriver client) {
+        String dom = ((JavascriptExecutor) client)
+                .executeScript("return document.documentElement.outerHTML;")
+                .toString();
         try {
-            Files.writeString(Paths.get("page.html"), client.getCurrentUrl()+"\n");
-            Files.writeString(Paths.get("page.html"), client.getPageSource(), StandardOpenOption.APPEND);
-            System.out.println("网页内容已成功写入 page.html");
+            Files.writeString(
+                    Paths.get("page.html"),
+                    dom,
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING
+            );
+            System.out.println("文件已成功写入page.html");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

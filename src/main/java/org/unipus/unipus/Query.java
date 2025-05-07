@@ -33,7 +33,7 @@ public class Query {
         List<WebElement> courseList = WaitForHTML.waitForFindElementsAppear(client, 10000, By.className("slick-list"));
         List<WebElement> courses = new ArrayList<>();
         for (WebElement course : courseList) {
-            courses.addAll(course.findElements(By.xpath("./*")));
+            courses.addAll(course.findElements(By.xpath(".//div[contains(@class, \"slick-current\")]")));
         }
         int courseNum = courses.size();
         switch (courseNum) {
