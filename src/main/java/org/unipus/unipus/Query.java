@@ -95,7 +95,12 @@ public class Query {
         int exceptnow = 0;
         for(int i=unitsComplete;i<units.size(); i++){
             units.get(i).click();
-            List<WebElement> requiredCourses = WaitForHTML.waitForFindElementsAppear(client, 1000, By.xpath("//div[contains(@class, \"unipus-tabs_itemActive\")]//*[contains(text(), '必修')]"));
+            List<WebElement> requiredCourses;
+            try {
+                requiredCourses = WaitForHTML.waitForFindElementsAppear(client, 1000, By.xpath("//div[contains(@class, \"unipus-tabs_itemActive\")]//*[contains(text(), '必修')]"));
+            } catch (TimeoutException e) {
+                requiredCourses = new ArrayList<>();
+            }
             Iterator<WebElement> iterator = requiredCourses.iterator();
             while (iterator.hasNext()) {
                 WebElement course = iterator.next();
