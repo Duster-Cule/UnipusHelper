@@ -26,12 +26,19 @@ public class Learn {
     }
 
     private Boolean startLearn(String LLMPlatform, String address, int port, String model, String APIKey, List<String> exceptURLs) throws InterruptedException, AnswerLogicException {
-        if (!client.getCurrentUrl().contains("ucontent.unipus.cn/_explorationpc_default/pc.html")) {
+        if (!WaitForHTML.waitForWebsiteJumpContainsURL(client, 5000,"ucontent.unipus.cn/_explorationpc_default/pc.html")) {
             throw new WrongThreadException("网址可能有误，请检查跳转。\n 当前地址:" + client.getCurrentUrl() + "需要地址:\n ucontent.unipus.cn/_explorationpc_default/pc.html");
         }
-        if (exceptURLs.contains(client.getCurrentUrl())) {
+
+        if (client.getCurrentUrl() == null || exceptURLs == null) {
             return false;
         }
+        String currentURL = client.getCurrentUrl();
+        if(exceptURLs.stream()
+                .filter(p -> p != null && !p.isEmpty())
+                .map(String::toLowerCase)
+                .anyMatch(currentURL::contains)) return false;
+
         WaitForHTML.waitForFindElementAppear(client, 10000, By.className("ant-message-success"));
 
         List<WebElement> iKnow = client.findElements(By.className("iKnow"));
@@ -112,9 +119,7 @@ public class Learn {
                 if (hints.size() == answers.size() && inputs.size() == hints.size()) {
                     for (int i = 0; i < hints.size(); i++) {
                         String answer0 = answers.get(i + 1);
-                        if (hints.get(i).length() <= 5) {
-                            answer0 = answer0.replace(hints.get(i), "");
-                        }
+                        answer0 = answer0.replace(hints.get(i), "");
                         inputs.get(i).sendKeys(StringProcesser.processIlligalCharacter(answer0));
                     }
                 } else
@@ -127,7 +132,9 @@ public class Learn {
                     client.findElement(By.xpath(".//span[normalize-space(.)='确 定']")).click();
                 }
                 WaitForHTML.waitForFindElementAppear(client, 10000, By.className("ant-message-success"));
-                System.out.println("作答完成，分数：" + client.findElement(By.className("grade")).getText());
+                if(!client.findElements(By.className("grade")).isEmpty()) {
+                    System.out.println("作答完成，分数：" + client.findElement(By.className("grade")).getText());
+                } else System.out.println("作答完成");
                 break;
             }
 
@@ -167,7 +174,9 @@ public class Learn {
                     client.findElement(By.xpath(".//span[normalize-space(.)='确 定']")).click();
                 }
                 WaitForHTML.waitForFindElementAppear(client, 10000, By.className("ant-message-success"));
-                System.out.println("作答完成，分数：" + client.findElement(By.className("grade")).getText());
+                if(!client.findElements(By.className("grade")).isEmpty()) {
+                    System.out.println("作答完成，分数：" + client.findElement(By.className("grade")).getText());
+                } else System.out.println("作答完成");
                 break;
             }
 

@@ -110,7 +110,8 @@ public class Query {
                 if ("已完成".equals(completeStatus)) {
                     iterator.remove();
                     continue;
-                } else if (exceptnow < this.exceptnum) {
+                }
+                if (exceptnow < this.exceptnum) {
                     exceptnow++;
                     iterator.remove();
                     continue;
@@ -129,6 +130,7 @@ public class Query {
             }
             System.out.println(units.get(i).getText()+"已完成");
             unitsComplete = i+1;
+            exceptnum = 0;
         }
         System.out.println("已跳过"+ this.exceptnum + "个题目");
         return -1;

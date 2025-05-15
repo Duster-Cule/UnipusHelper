@@ -215,18 +215,25 @@ public class Main {
     }
 
     public static void printCurrentHtmlDOM(WebDriver client) {
-        String dom = ((JavascriptExecutor) client)
-                .executeScript("return document.documentElement.outerHTML;")
-                .toString();
         try {
+            Thread.sleep(1000);
+
+            ChromeDriver chrome = (ChromeDriver) client;
+
+            Map<String,Object> params = new HashMap<>();
+            params.put("format", "mhtml");
+            Map<String,Object> result = chrome.executeCdpCommand("Page.captureSnapshot", params);
+
+            String mhtml = (String) result.get("data");
             Files.writeString(
-                    Paths.get("page.html"),
-                    dom,
+                    Paths.get("page.mhtml"),
+                    mhtml,
                     StandardOpenOption.CREATE,
                     StandardOpenOption.TRUNCATE_EXISTING
             );
-            System.out.println("文件已成功写入page.html");
-        } catch (IOException e) {
+            System.out.println("页面完整 MHTML 已写入 page.mhtml");
+        } catch (Exception e) {
+            System.err.println("写入页面 MHTML 失败");
             throw new RuntimeException(e);
         }
     }
