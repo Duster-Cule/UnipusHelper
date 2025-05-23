@@ -142,7 +142,7 @@ public class Query {
         List<String> classes = Arrays.asList(question.getDomAttribute("class").split(" "));
         if(classes.contains("has-material")) {
             if(classes.contains("has-reply")) {
-                if(!question_warp.findElements(By.xpath("//div[@class=\"question-audio\"]")).isEmpty()) return QuestionType.LISTENING;
+                if(!question_warp.findElements(By.cssSelector("div.question-audio")).isEmpty()) return QuestionType.LISTENING;
                 if(!question_warp.findElements(By.xpath("//div[@class=\"discussion-cloud-reply\"]")).isEmpty()) return QuestionType.COMMENT;
                 if(!question_warp.findElements(By.xpath("//div[@class=\"question-common-abs-choice\"]")).isEmpty()) return QuestionType.CHOOSING;
                 if(!question_warp.findElements(By.xpath("//div[@class=\"reply-wrap\"]//div[@class=\"question-inputbox\"]")).isEmpty()) return QuestionType.SHORTANSWER;
