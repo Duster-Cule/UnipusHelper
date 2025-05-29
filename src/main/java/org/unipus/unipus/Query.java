@@ -33,7 +33,7 @@ public class Query {
         List<WebElement> courseList = WaitForHTML.waitForFindElementsAppear(client, 10000, By.className("slick-list"));
         List<WebElement> courses = new ArrayList<>();
         for (WebElement course : courseList) {
-            courses.addAll(course.findElements(By.xpath(".//div[contains(@class, \"slick-current\")]")));
+            courses.addAll(course.findElements(By.xpath(".//div[contains(@class, \"slick-active\")]")));
         }
         int courseNum = courses.size();
         switch (courseNum) {
@@ -56,15 +56,19 @@ public class Query {
             default:
                 System.out.println("共有" + courseNum + "门课程在学习");
                 for (int i=0; i<courses.size(); i++) {
-                    WebElement cours = courses.get(i);
-                    System.out.println((i+1)+":");
-                    String[] courseInfo1 = cours.getDomProperty("innerText").split("\n");
-                    System.out.println(courseInfo1[0]);
-                    System.out.println(courseInfo1[2] + courseInfo1[3]);
-                    System.out.print(courseInfo1[4]);
-                    if(!client.findElements(By.xpath("//span[contains(@class, \"ant-progress-text\")]/*[contains(@class, \"anticon-check-circle\")]")).isEmpty()) {
-                        System.out.println("已完成");
-                    } else System.out.println(courseInfo1[5]);
+                    try {
+                        WebElement cours = courses.get(i);
+                        System.out.println((i + 1) + ":");
+                        String[] courseInfo1 = cours.getDomProperty("innerText").split("\n");
+                        System.out.println(courseInfo1[0]);
+                        System.out.println(courseInfo1[2] + courseInfo1[3]);
+                        System.out.print(courseInfo1[4]);
+                        if (!client.findElements(By.xpath("//span[contains(@class, \"ant-progress-text\")]/*[contains(@class, \"anticon-check-circle\")]")).isEmpty()) {
+                            System.out.println("已完成");
+                        } else System.out.println(courseInfo1[5]);
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                        System.out.println("获取课本信息失败，可能这本书不能学习");
+                    }
                     System.out.println("====================================");
                 }
                 Scanner s = new Scanner(System.in);
