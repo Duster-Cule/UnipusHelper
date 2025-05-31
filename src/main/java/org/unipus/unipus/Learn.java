@@ -93,10 +93,10 @@ public class Learn {
 
             case FILLINGBLANKS: {
                 List<WebElement> textInputs = client.findElements(By.className("placeholder"));
-                List<String> quesNum = new ArrayList<>();
-                for (int i = 0; i < textInputs.size(); i++) {
-                    quesNum.add(i + ")");
-                }
+//                List<String> quesNum = new ArrayList<>();
+//                for (int i = 0; i < textInputs.size(); i++) {
+//                    quesNum.add(i + ")");
+//                }
 
                 //接入LLM
 
@@ -116,7 +116,7 @@ public class Learn {
                 for (WebElement hint : client.findElements(By.xpath("//div[@class=\"component-htmlview\"]/*/*[contains(@style, 'color: #169179')]"))) {
                     hints.add(hint.getText());
                 }
-                if (hints.size() == answers.size() && inputs.size() == hints.size()) {
+                if (answers.size() == inputs.size() && (inputs.size() == hints.size() || hints.isEmpty())) {
                     for (int i = 0; i < hints.size(); i++) {
                         String answer0 = answers.get(i + 1);
                         answer0 = answer0.replace(hints.get(i), "");

@@ -161,8 +161,8 @@ public class Query {
             }
         } else if (classes.contains("has-reply")) {
             if(!question_warp.findElements(By.xpath("//div[@class=\"question-common-abs-choice\"]")).isEmpty()) return QuestionType.CHOOSING;
-            if(!question_warp.findElements(By.xpath("//div[@class=\"item\"]")).isEmpty()) return QuestionType.FILLINGBLANKS;
             if(!question_warp.findElements(By.xpath("//div[@class=\"question-inputbox\"]")).isEmpty()) return QuestionType.SHORTANSWER;
+            if(!question_warp.findElements(By.xpath("//div[@class=\"item\"]")).isEmpty()) return QuestionType.FILLINGBLANKS;
         } else {
             if(!question_warp.findElements(By.xpath("//div[@class=\"question-rich-text-read\"]")).isEmpty()) return QuestionType.READING;
             if(!question_warp.findElements(By.xpath("//div[@class=\"wrapper\"]")).isEmpty()) return QuestionType.READING;
