@@ -33,7 +33,7 @@ public class Query {
         List<WebElement> courseList = WaitForHTML.waitForFindElementsAppear(client, 10000, By.className("slick-list"));
         List<WebElement> courses = new ArrayList<>();
         for (WebElement course : courseList) {
-            courses.addAll(course.findElements(By.xpath(".//div[contains(@class, \"slick-active\")]")));
+            courses.addAll(course.findElements(By.xpath(".//div[contains(@class, \"slick-slide\")]")));
         }
         int courseNum = courses.size();
         switch (courseNum) {
@@ -59,7 +59,7 @@ public class Query {
                     try {
                         WebElement cours = courses.get(i);
                         System.out.println((i + 1) + ":");
-                        String[] courseInfo1 = cours.getDomProperty("innerText").split("\n");
+                        String[] courseInfo1 = cours.findElement(By.className("ant-card-body")).getDomProperty("innerText").split("\n");
                         System.out.println(courseInfo1[0]);
                         System.out.println(courseInfo1[2] + courseInfo1[3]);
                         System.out.print(courseInfo1[4]);
@@ -77,7 +77,12 @@ public class Query {
                     System.out.println("请在下面输入你要学习的编号");
                     index = s.nextInt();
                 }while (!(index>0&&index<=courseNum));
-                courses.get(index-1).click();
+                WebElement selectedCourse = courses.get(index - 1);
+                while (!selectedCourse.getDomProperty("className").contains("slick-active")) {
+                    List<WebElement> moreButton = client.findElements(By.xpath("//span[contains(@class,\"slick-next\") and not(contains(@class,\"slick-disabled\"))]"));
+                    moreButton.forEach(WebElement::click);
+                }
+                selectedCourse.click();
         }
         return 0;
     }

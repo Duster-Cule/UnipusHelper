@@ -168,15 +168,20 @@ public class Learn {
                     throw new AnswerLogicException("题目与答案不符|题目类型：CHOOSING|题目数量：" + choices.size() + "|答案数量：" + answers.size());
 
                 Thread.sleep(500);
-                client.findElement(By.xpath("//a[@class='btn' and text()='提 交']")).click();
-                Thread.sleep(1000);
-                if (!client.findElements(By.className("ant-modal-confirm-btns")).isEmpty()) {
-                    client.findElement(By.xpath(".//span[normalize-space(.)='确 定']")).click();
+                if(!client.findElements(By.xpath("//a[@class='btn' and text()='提 交']")).isEmpty()) {
+                    client.findElement(By.xpath("//a[@class='btn' and text()='提 交']")).click();
+                    Thread.sleep(1000);
+                    if (!client.findElements(By.className("ant-modal-confirm-btns")).isEmpty()) {
+                        client.findElement(By.xpath(".//span[normalize-space(.)='确 定']")).click();
+                    }
+                    WaitForHTML.waitForFindElementAppear(client, 10000, By.className("ant-message-success"));
+                    if (!client.findElements(By.className("grade")).isEmpty()) {
+                        System.out.println("作答完成，分数：" + client.findElement(By.className("grade")).getText());
+                    } else System.out.println("作答完成");
+                } else {
+                    client.findElement(By.xpath("//a[@class='btn' and text()='下一题']")).click();
+                    return startLearn(LLMPlatform, address, port, model, APIKey, exceptURLs);
                 }
-                WaitForHTML.waitForFindElementAppear(client, 10000, By.className("ant-message-success"));
-                if(!client.findElements(By.className("grade")).isEmpty()) {
-                    System.out.println("作答完成，分数：" + client.findElement(By.className("grade")).getText());
-                } else System.out.println("作答完成");
                 break;
             }
 
